@@ -8,19 +8,27 @@ const { expect } = require("chai");
 
 describe("MultiSigWallet", function () {
 
+  async function deployFixture() {
+    const [owner, server, backup, receiver] = await ethers.getSigners();
+    const MSWF = await ethers.getContractFactory("MultiSigWalletFactory");
+    const mswf = await MSWF.deploy();
+
+    const owneraddr = await owner.getAddress();
+    const backupaddr = await backup.getAddress();
+    const serveraddr = await server.getAddress();
+
+    await mswf.createWallet(owneraddr,backupaddr,serveraddr);
+
+    const walletaddr = await mswf.mainMapping(owneraddr);
+    const wallet = await hre.ethers.getContractAt("MultiSigWallet", walletaddr, owner);
+
+    return { owner, server, backup, receiver, wallet, mswf, owneraddr, backupaddr, serveraddr, walletaddr };
+  }
+
+
   describe("Deployment", function () {
     it("Should get correct MultiSigWallet address", async function () {
-      const [owner, server, backup, receiver] = await ethers.getSigners();
-
-      const MSWF = await ethers.getContractFactory("MultiSigWalletFactory");
-      const mswf = await MSWF.deploy();
-
-      let owneraddr = await owner.getAddress();
-      let backupaddr = await backup.getAddress();
-      let serveraddr = await server.getAddress();
-
-
-      await mswf.createWallet(owneraddr,backupaddr,serveraddr);
+      const {mswf,owneraddr, backupaddr} = await loadFixture(deployFixture);
       expect(await mswf.mainMapping(owneraddr)).to.equal(await mswf.backupMapping(backupaddr));
     });
   });
@@ -28,15 +36,7 @@ describe("MultiSigWallet", function () {
   describe("Deposit and Withdraw", function () {
     it("Should deposit 1 ETH", async function () {
       // deposit
-      const [owner, server, backup, receiver] = await ethers.getSigners();
-
-      const MSWF = await ethers.getContractFactory("MultiSigWalletFactory");
-      const mswf = await MSWF.deploy();
-
-      let owneraddr = await owner.getAddress();
-
-      let walletaddr = await mswf.mainMapping(owneraddr);
-      const wallet = await ethers.getContractAt("MultiSigWallet", walletaddr);
+      const {wallet, owner, backup, server, receiver, walletaddr} = await loadFixture(deployFixture);
 
       const transaction = await owner.sendTransaction({
         to: walletaddr,
@@ -47,23 +47,12 @@ describe("MultiSigWallet", function () {
 
       // withdraw
       let initialbalance = await wallet.provider.getBalance(receiver.address);
-
-      // const wallettxstart = await wallet.connect(owner);
-      let wallet1 = await ethers.getContractAt("MultiSigWallet", walletaddr,owner);
-      await wallet1.submitTransaction(receiver.address, ethers.utils.parseEther("1"));
+      await wallet.submitTransaction(receiver.address, ethers.utils.parseEther("1"));
       
-      let wallet2 = await ethers.getContractAt("MultiSigWallet", walletaddr,server);
+      let wallet2 = await wallet.connect(server);
       await wallet2.confirmTransaction(0);
-      
-      // let tx = await wallet.getTransactionCount();
-      // console.log("Transaction: ", tx);
-
-      let finalbalance = await wallet2.provider.getBalance(receiver.address);
-
-      console.log(initialbalance);
-      console.log(finalbalance);
-
-      // expect(await wallet.provider.getBalance(receiver.address)).to.equal(ethers.utils.parseEther("1")+initialbalance);
+      let finalbalance = await wallet.provider.getBalance(receiver.address);
+      expect(finalbalance).to.equal(ethers.utils.parseEther("1").add(initialbalance));
 
     });
   });
