@@ -66,6 +66,13 @@ contract MultiSigWallet {
     }
 
     constructor(address main,address backup, address server) {
+        require(main != address(0), "main is the zero address");
+        require(backup != address(0), "backup is the zero address");
+        require(server != address(0), "server is the zero address");
+        require(main != backup, "main and backup are the same address");
+        require(main != server, "main and server are the same address");
+        require(backup != server, "backup and server are the same address");
+              
         verifyingServerAddress = server;
         backupAddress = backup;
         mainAddress = main;
