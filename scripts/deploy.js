@@ -10,6 +10,7 @@ async function main() {
   const MSWF = await hre.ethers.getContractFactory("MultiSigWalletFactory");
   const mswf = await MSWF.deploy();
 
+  console.log("MultiSigWalletFactory deployed to:", mswf.address);
   await mswf.deployed();
 }
 

@@ -6,6 +6,9 @@ contract MultiSigWalletFactory{
     mapping(address => address) public backupMapping;
 
     function createWallet(address main,address backup, address server) public{
+        require(mainMapping[main] == address(0), "Main address already exists");
+        require(backupMapping[backup] == address(0), "Backup address already exists");
+
         MultiSigWallet newWallet = new MultiSigWallet(main,backup,server);
 
         mainMapping[main] = address(newWallet);
