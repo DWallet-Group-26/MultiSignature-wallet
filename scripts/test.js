@@ -7,13 +7,14 @@
 const hre = require("hardhat");
 
 async function main() {
-
-    const addr = "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be";
-    const value = "111.0"
-
     const [owner, addr1, addr2] = await hre.ethers.getSigners();
-    owner.sendTransaction({from: owner.address, to: addr, value: hre.ethers.utils.parseEther(value)});
-
+    const MSWF = await hre.ethers.getContractAt("MultiSigWalletFactory", "0x5fbdb2315678afecb367f032d93f642f64180aa3",owner);
+    await MSWF.createWallet(
+        "0x232ef9923665cc68c7d7f283038e6195b58678e8",
+        addr1.address,
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    );
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
