@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 contract MultiSigWalletFactory{
     mapping(address => address) public mainMapping;
     mapping(address => address) public backupMapping;
+    mapping(address => address) public mainFromBackupMapping;
 
     function createWallet(address main,address backup, address server) public{
         require(mainMapping[main] == address(0), "Main address already exists");
@@ -13,6 +14,7 @@ contract MultiSigWalletFactory{
 
         mainMapping[main] = address(newWallet);
         backupMapping[backup] = address(newWallet);
+        mainFromBackupMapping[backup] = main;
     }
 }
 
