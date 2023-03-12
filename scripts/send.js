@@ -8,11 +8,11 @@ const hre = require("hardhat");
 
 async function main() {
 
-    const addr = "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be";
-    const value = "111.0"
+  const addr = "0xbd89205d29cd2454d6d1664d58a7cc0af0fec026";
+  const value = "1.0"
 
-    const [owner, addr1, addr2] = await hre.ethers.getSigners();
-    owner.sendTransaction({from: owner.address, to: addr, value: hre.ethers.utils.parseEther(value)});
+  const [owner, addr1, addr2] = await hre.ethers.getSigners();
+  owner.sendTransaction({ from: owner.address, to: addr, value: hre.ethers.utils.parseEther(value) });
 
 }
 
